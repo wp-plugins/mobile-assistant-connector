@@ -1443,13 +1443,10 @@ class MobileAssistantConnector
         $query = $fields . $sql;
         $query_total = $fields_total . $sql;
 		$status_list_hide = array("auto-draft", "draft", "trash" );
-		$query_params_parts[] =  "posts.post_status NOT IN ( '" . implode($status_list_hide, "', '") . "' )"; ;
-		
-
-		
+						
         if(!empty($this->params) && !empty($this->val)) {
             $params = explode("|", $this->params);
-		
+			
             foreach($params as $param) {
                 switch ($param) {
                     case 'pr_id':
@@ -1464,7 +1461,10 @@ class MobileAssistantConnector
                 }
             }
         }
-
+		 if(!empty($status_list_hide)) {
+			$query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $status_list_hide, "', '") . "' )";
+		}
+		
         if(!empty($this->statuses)) {
             if(function_exists('wc_get_order_status_name')) {
                 $query_where_parts[] = sprintf(" posts_orders.post_status IN ('%s')", $this->get_filter_statuses($this->statuses));
