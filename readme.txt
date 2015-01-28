@@ -1,4 +1,4 @@
-=== Mobile Assistant Connector ===
+=== WooCommerce Mobile Assistant Connector ===
 Contributors: emagicone
 Tags: woocommerce, android, mobile, shop, sales, assistant, business, control, statistics, reports, tracker
 Requires at least: 3.0.1 or higher
