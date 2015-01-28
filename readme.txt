@@ -71,8 +71,8 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 11. Mobile Assistant Push Notifications screenshot-11.png
 12. Mobile Assistant Side Menu screenshot-12.png
 13. Mobile Assistant Widget Setting screenshot-13.png
-14. Plugin screenshot-14.png
-15. Widget screenshot-15.png
+14. Widget screenshot-14.png
+15. Plugin screenshot-15.png
 
  
 
