@@ -58,21 +58,21 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 
 == Screenshots ==
 
-1. About WooCommerce Mobile Assistant About-WooCommerce-Mobile-Assistant.png
-2. Mobile Assistant Dashboard Mobile-Assistant-Dashboard.png
-3. Mobile Assistant Connection Settings Mobile-Assistant-Connection-Settings.png
-4. Mobile Assistant Customers General Mobile-Assistant-Customers-General.png
-5. Mobile Assistant Menu Mobile-Assistant-Menu.png
-6. Mobile Assistant Order Details Mobile-Assistant-Order-Details.png
-7. Mobile Assistant Orders General  Mobile-Assistant-Orders-General.png
-8. Mobile Assistant Orders Status Update Mobile-Assistant-Orders-Status-Update.png
-9. Mobile Assistant Product Details Mobile-Assistant-Product-Details.png
-10. Mobile Assistant Products General Mobile-Assistant-Products-General.png
-11. Mobile Assistant Push Notifications Mobile-Assistant-Push-Notifications.png
-12. Mobile Assistant Side Menu Mobile-Assistant-Side-Menu.png
-13. Mobile Assistant Widget Settings Mobile-Assistant-Widget-Settings.png
-14. Widget Widget.png
-15. Widget plugin.png
+1. About WooCommerce Mobile Assistant screenshot-1.png
+2. Mobile Assistant Dashboard screenshot-2.png
+3. Mobile Assistant Connection Settings screenshot-3.png
+4. Mobile Assistant Customers General screenshot-4.png
+5. Mobile Assistant Menu screenshot-5.png
+6. Mobile Assistant Order Details screenshot-6.png
+7. Mobile Assistant Orders General  screenshot-7.png
+8. Mobile Assistant Orders Status Update screenshot-8.png
+9. Mobile Assistant Product Details screenshot-9.png
+10. Mobile Assistant Products General screenshot-10.png
+11. Mobile Assistant Push Notifications screenshot-11.png
+12. Mobile Assistant Side Menu screenshot-12.png
+13. Mobile Assistant Widget Setting screenshot-13.png
+14. Plugin screenshot-14.png
+15. Widget screenshot-15.png
 
 == Changelog ==
 
