@@ -652,7 +652,6 @@ class MobileAssistantConnector
         global $wpdb;
 
         $order_statuses = array();
-        $query_where_parts = array("posts.post_status <> 'auto-draft'");
 
         if(function_exists('wc_get_order_status_name')) {
             $query = "SELECT COUNT(DISTINCT(posts.ID)) AS count, SUM(meta_order_total.meta_value) AS total, posts.post_status AS code
@@ -777,12 +776,7 @@ class MobileAssistantConnector
             $query_products .= $query;
         }
 
-        $query_where_parts = array(
-            "posts.post_status <> 'auto-draft'",
-            "posts.post_status <> 'draft'",
-            "posts.post_status <> 'trash'",
-            "posts.post_type = 'shop_order'",
-        );
+
 
         if (isset($data['date_from'])) {
             $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) >= '%d'", strtotime($data['date_from']));
@@ -821,7 +815,6 @@ class MobileAssistantConnector
     public function get_orders() {
         global $wpdb;
 
-        $query_where_parts = array("posts.post_status <> 'auto-draft'");
 
         $sql_total_products = "SELECT SUM(meta_items_qty.meta_value)
             FROM `{$wpdb->prefix}woocommerce_order_items` AS order_items
@@ -1449,11 +1442,14 @@ class MobileAssistantConnector
 
         $query = $fields . $sql;
         $query_total = $fields_total . $sql;
+		$status_list_hide = array("auto-draft", "draft", "trash" );
+		$query_params_parts[] =  "posts.post_status NOT IN ( '" . implode($status_list_hide, "', '") . "' )"; ;
+		
 
-
+		
         if(!empty($this->params) && !empty($this->val)) {
             $params = explode("|", $this->params);
-
+		
             foreach($params as $param) {
                 switch ($param) {
                     case 'pr_id':
