@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Mobile Assistant Connector
-Plugin URI: http://woocommerce-manager.com/plugin/mobassistantconnector.zip
+Plugin URI: http://woocommerce-manager.com/
 Description:  This plugin allows you to keep your online business under control wherever you are. All you need is just to have on hand your android mobile phone and Internet connection.
 Author: eMagicOne
 Author URI: http://woocommerce-manager.com
