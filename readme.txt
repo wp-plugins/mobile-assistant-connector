@@ -1,5 +1,6 @@
 === WooCommerce Mobile Assistant Connector ===
 Contributors: emagicone
+Plugin URI: https://wordpress.org/plugins/mobile-assistant-connector/
 Tags: woocommerce, android, mobile, shop, sales, assistant, business, control, statistics, reports, tracker
 Requires at least: 3.0.1
 Tested up to: 4.1
