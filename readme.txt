@@ -75,15 +75,18 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 15. Plugin
 
 == Changelog ==
+= 1.0.1 =
+* BugFix
+
+
 
 = 1.0.0 =
 * First release
 
 == Upgrade notice ==
 
-
 = 1.0.1 =
-* Bugfix
+* BugFix
 
 
 = 1.0.0 =
