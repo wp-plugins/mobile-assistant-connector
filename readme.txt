@@ -3,7 +3,7 @@ Contributors: emagicone
 Tags: woocommerce, android, mobile, shop, sales, assistant, business, control, statistics, reports, tracker
 Requires at least: 3.0.1
 Tested up to: 4.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -75,15 +75,17 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 15. Plugin
 
 == Changelog ==
-= 1.0.1 =
-* BugFix
-
 
 
 = 1.0.0 =
 * First release
 
 == Upgrade notice ==
+
+
+= 1.0.2 =
+* BugFix
+
 
 = 1.0.1 =
 * BugFix

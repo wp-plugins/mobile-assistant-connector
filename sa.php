@@ -6,8 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class MobileAssistantConnector
 {
-    const PLUGIN_CODE = '1';
-    const PLUGIN_VERSION = '1.0.0';
+    const PLUGIN_CODE = '2';
+    const PLUGIN_VERSION = '1.0.2';
 
     public $call_function;
     public $hash;
@@ -18,6 +18,7 @@ class MobileAssistantConnector
     protected $sDBPrefix = '';
     protected $site_url = '';
     protected $CartType = -1;
+    protected $status_list_hide = array("auto-draft", "draft", "trash" );
 
 
     public function __construct() {
@@ -146,7 +147,7 @@ class MobileAssistantConnector
     }
 
     private function test_default_password_is_changed() {
-        $options = get_option( 'mobassistantconnector');
+        $options = get_option('mobassistantconnector');
 
         return !($options['login'] == '1' && md5($options['pass']) == 'c4ca4238a0b923820dcc509a6f75849b');
     }
@@ -256,7 +257,7 @@ class MobileAssistantConnector
 
     private function check_auth()
     {
-        $options = get_option( 'mobassistantconnector');
+        $options = get_option('mobassistantconnector');
 
         if (isset($this->hash) && md5($options['login'] . $options['pass']) == $this->hash) {
             return true;
@@ -527,7 +528,10 @@ class MobileAssistantConnector
             }
 
             if($custom_period == 7) {
-                $sql = "SELECT MIN(post_date) AS min_date_add, MAX(post_date) AS max_date_add FROM `{$wpdb->posts}` WHERE post_type = 'shop_order'";
+                $sql = "SELECT MIN(post_date_gmt) AS min_date_add, MAX(post_date_gmt) AS max_date_add FROM `{$wpdb->posts}` WHERE post_type = 'shop_order'";
+                if(!empty($this->status_list_hide)) {
+                    $sql .= " AND post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+                }
 
                 if($max_date = $wpdb->get_row($sql, ARRAY_A)) {
                     $startDate = $max_date['min_date_add'];
@@ -558,7 +562,10 @@ class MobileAssistantConnector
 
             $query .= " LEFT JOIN `{$wpdb->postmeta}` AS meta_order_total ON meta_order_total.post_id = posts.ID AND meta_order_total.meta_key = '_order_total'
                         WHERE posts.post_type = 'shop_order'
-                          AND UNIX_TIMESTAMP(posts.post_date) >= '%d' AND UNIX_TIMESTAMP(posts.post_date) < '%d' ";
+                            AND UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d' AND UNIX_TIMESTAMP(posts.post_date_gmt) < '%d' ";
+            if(!empty($this->status_list_hide)) {
+                $query .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+            }
 
             $query = sprintf($query, $date, strtotime($plus_date, $date));
 
@@ -570,7 +577,7 @@ class MobileAssistantConnector
                 }
             }
 
-            $query .= " GROUP BY DATE(posts.post_date) ORDER BY posts.post_date";
+            $query .= " GROUP BY DATE(posts.post_date_gmt) ORDER BY posts.post_date_gmt";
 
             $total_order_per_day = 0;
             if($results = $wpdb->get_results($query, ARRAY_A)) {
@@ -687,11 +694,15 @@ class MobileAssistantConnector
 
         $query_where_parts[] = " posts.post_type = 'shop_order' ";
         if(!empty($date_from)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) >= '%d'", strtotime($date_from . " 00:00:00"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d'", strtotime($date_from . " 00:00:00"));
         }
 
         if(!empty($date_to)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) <= '%d'", strtotime($date_to . " 23:59:59"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) <= '%d'", strtotime($date_to . " 23:59:59"));
+        }
+
+        if(!empty($this->status_list_hide)) {
+            $query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
         }
 
         if(!empty($query_where_parts)) {
@@ -753,6 +764,7 @@ class MobileAssistantConnector
 
     private function _get_total_orders_i_products($data) {
         global $wpdb;
+        $query_where_parts = array();
 
         $query_orders = "SELECT
               COUNT(posts.ID) AS count_orders,
@@ -774,15 +786,14 @@ class MobileAssistantConnector
             $query_products .= $query;
         }
 
-
 		$query_where_parts[] = " posts.post_type = 'shop_order' ";
 	
         if (isset($data['date_from'])) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) >= '%d'", strtotime($data['date_from']));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d'", strtotime($data['date_from']));
         }
 
         if (isset($data['date_to'])) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) <= '%d'", strtotime($data['date_to']));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) <= '%d'", strtotime($data['date_to']));
         }
 
         if (isset($data['statuses'])) {
@@ -793,11 +804,9 @@ class MobileAssistantConnector
             }
         }
         
-	$status_list_hide = array("auto-draft", "draft", "trash" );
-
-	if(!empty($status_list_hide)) {
-	    $query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $status_list_hide, "', '") . "' )";
-	}
+        if(!empty($this->status_list_hide)) {
+            $query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
 
         if(!empty($query_where_parts)) {
             $query_orders .= " WHERE " . implode(" AND ", $query_where_parts);
@@ -834,7 +843,7 @@ class MobileAssistantConnector
 
         $fields = "SELECT
                     posts.ID AS id_order,
-                    posts.post_date AS date_add,
+                    posts.post_date_gmt AS date_add,
                     meta_order_total.meta_value AS total_paid,
                     meta_order_currency.meta_value AS currency_code,
                     $status_code_field AS status_code,
@@ -868,12 +877,16 @@ class MobileAssistantConnector
 
         $query_where_parts[] = " posts.post_type = 'shop_order' ";
 
+        if(!empty($this->status_list_hide)) {
+            $query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
+
         if(!empty($this->orders_from)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) >= '%d'", strtotime($this->orders_from." 00:00:00"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d'", strtotime($this->orders_from." 00:00:00"));
         }
 
         if(!empty($this->orders_to)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) <= '%d'", strtotime($this->orders_to." 23:59:59"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) <= '%d'", strtotime($this->orders_to." 23:59:59"));
         }
 
         if(!empty($this->search_order_id) && preg_match('/^\d+(?:,\d+)*$/', $this->search_order_id)) {
@@ -907,7 +920,7 @@ class MobileAssistantConnector
                 $query .= "posts.ID DESC";
                 break;
             case 'date':
-                $query .= "posts.post_date DESC";
+                $query .= "posts.post_date_gmt DESC";
                 break;
             case 'name':
                 $query .= "customer ASC";
@@ -1096,6 +1109,14 @@ class MobileAssistantConnector
                 AND posts.post_type = 'product'
                 AND order_items.order_id = '%d'";
 
+        if(!empty($this->status_list_hide)) {
+            $query .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
+
+        if(!empty($status_list_hide)) {
+            $query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $status_list_hide, "', '") . "' )";
+        }
+
         $query = sprintf($query, $this->order_id);
 
         $results = $wpdb->get_results($query, ARRAY_A);
@@ -1141,9 +1162,14 @@ class MobileAssistantConnector
                     SELECT COUNT(DISTINCT(posts.ID)) AS total_orders, meta.meta_value AS id_customer FROM `{$wpdb->posts}` AS posts
                     LEFT JOIN `{$wpdb->postmeta}` AS meta ON posts.ID = meta.post_id
                     WHERE meta.meta_key = '_customer_user'
-                    AND posts.post_type = 'shop_order'
-                    GROUP BY meta.meta_value
-                  ) AS tot ON tot.id_customer = c.ID";
+                    AND posts.post_type = 'shop_order'";
+
+        if(!empty($this->status_list_hide)) {
+            $sql .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
+
+        $sql .= " GROUP BY meta.meta_value ) AS tot ON tot.id_customer = c.ID";
+
 
         $query = $fields . $sql;
         $query_page = $total_fields . $sql;
@@ -1321,7 +1347,7 @@ class MobileAssistantConnector
                     meta_total.meta_value AS total_paid,
                     meta_curr.meta_value AS currency_code,
                     posts.post_status AS order_status_id,
-                    posts.post_date as date_add,
+                    posts.post_date_gmt as date_add,
                     (SELECT SUM(meta_value) FROM `{$wpdb->prefix}woocommerce_order_itemmeta` WHERE order_item_id = order_items.order_item_id AND meta_key = '_qty') AS pr_qty
                 FROM `$wpdb->posts` AS posts
                     LEFT JOIN `{$wpdb->postmeta}` AS meta ON posts.ID = meta.post_id
@@ -1330,8 +1356,13 @@ class MobileAssistantConnector
                     LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS order_items on order_items.order_id = posts.ID AND order_item_type = 'line_item'
                 WHERE meta.meta_key = '_customer_user'
                     AND meta.meta_value = '%s'
-                    AND posts.post_type = 'shop_order'
-                GROUP BY order_items.order_id";
+                    AND posts.post_type = 'shop_order'";
+
+        if(!empty($this->status_list_hide)) {
+            $sql .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
+
+        $sql .= " GROUP BY order_items.order_id";
 
         $sql .= sprintf(" LIMIT %d, %d", (($this->page - 1)*$this->show), $this->show);
 
@@ -1364,8 +1395,12 @@ class MobileAssistantConnector
                     LEFT JOIN `{$wpdb->postmeta}` AS meta_curr ON meta_curr.post_id = posts.ID AND meta_curr.meta_key = '_order_currency'
                     LEFT JOIN `{$wpdb->prefix}woocommerce_order_items` AS order_items on order_items.order_id = posts.ID AND order_item_type = 'line_item'
                 WHERE meta.meta_key = '_customer_user'
-                    AND   meta.meta_value = '%s'
-                    AND   posts.post_type = 'shop_order'";
+                    AND meta.meta_value = '%s'
+                    AND posts.post_type = 'shop_order'";
+
+        if(!empty($this->status_list_hide)) {
+            $sql .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
 
         $sql = $wpdb->prepare( $sql, $id );
 
@@ -1398,6 +1433,10 @@ class MobileAssistantConnector
             LEFT JOIN `$wpdb->postmeta` AS meta_sku ON meta_sku.post_id = posts.ID AND meta_sku.meta_key = '_sku'
             LEFT JOIN `$wpdb->postmeta` AS meta_stock ON meta_stock.post_id = posts.ID AND meta_stock.meta_key = '_stock'
 		WHERE posts.post_type = 'product'";
+
+        if(!empty($this->status_list_hide)) {
+            $sql .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
 
         $products = $this->_get_products($fields, $fields_total, $sql);
 
@@ -1435,6 +1474,10 @@ class MobileAssistantConnector
         $sql .= " WHERE order_items.order_item_type = 'line_item'
                 AND posts.post_type = 'product'";
 
+        if(!empty($this->status_list_hide)) {
+            $sql .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
+
         $products = $this->_get_products($fields, $fields_total, $sql);
 
         return $products;
@@ -1447,8 +1490,7 @@ class MobileAssistantConnector
 
         $query = $fields . $sql;
         $query_total = $fields_total . $sql;
-		$status_list_hide = array("auto-draft", "draft", "trash" );
-						
+
         if(!empty($this->params) && !empty($this->val)) {
             $params = explode("|", $this->params);
 			
@@ -1466,8 +1508,8 @@ class MobileAssistantConnector
                 }
             }
         }
-		 if(!empty($status_list_hide)) {
-			$query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $status_list_hide, "', '") . "' )";
+		 if(!empty($this->status_list_hide)) {
+			$query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
 		}
 		
         if(!empty($this->statuses)) {
@@ -1479,11 +1521,11 @@ class MobileAssistantConnector
         }
 
         if (!empty($this->products_from)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts_orders.post_date) >= '%d'", strtotime($this->products_from . " 00:00:00"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts_orders.post_date_gmt) >= '%d'", strtotime($this->products_from . " 00:00:00"));
         }
 
         if (!empty($this->products_to)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts_orders.post_date) <= '%d'", strtotime($this->products_to . " 23:59:59"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts_orders.post_date_gmt) <= '%d'", strtotime($this->products_to . " 23:59:59"));
         }
 
         if (!empty($query_params_parts)) {
@@ -1558,7 +1600,12 @@ class MobileAssistantConnector
                 LEFT JOIN `$wpdb->postmeta` AS meta_price ON meta_price.post_id = posts.ID AND meta_price.meta_key = '_price'
                 LEFT JOIN `$wpdb->postmeta` AS meta_sku ON meta_sku.post_id = posts.ID AND meta_sku.meta_key = '_sku'
                 LEFT JOIN `$wpdb->postmeta` AS meta_stock ON meta_stock.post_id = posts.ID AND meta_stock.meta_key = '_stock'
-            WHERE posts.post_type = 'product' AND posts.ID = '%d'";
+            WHERE posts.post_type = 'product'
+                AND posts.ID = '%d'";
+
+        if(!empty($this->status_list_hide)) {
+            $sql .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
+        }
 
         $sql = sprintf($sql, $this->product_id);
 
@@ -1608,8 +1655,11 @@ class MobileAssistantConnector
     }
 
     private function _get_product_type($product_id) {
-        //$the_product = wc_get_product( $product_id );
-        $the_product = get_product( $product_id );
+        if(function_exists('wc_get_product')) {
+            $the_product = wc_get_product( $product_id );
+        } else {
+            $the_product = get_product($product_id);
+        }
 
         $type = '';
         if ( 'grouped' == $the_product->product_type ) {
@@ -2082,7 +2132,7 @@ function sendCustomerPushMessage($customer) {
 function sendPush2Google($setting_id, $registration_id, $message) {
     $options = get_option('mobassistantconnector');
     if(!isset($options['mobassist_api_key'])) {
-        $apiKey = "AIzaSyDIq4agB70Zv7AkB9pVuF2KxcU4WQ94CVI";
+        $apiKey = "AIzaSyBSh9Z-D0xOo0BdVs5EgSq62v10RhEEHMY";
     } else {
         $apiKey = $options['mobassist_api_key'];
     }
