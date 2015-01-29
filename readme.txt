@@ -3,7 +3,7 @@ Contributors: emagicone
 Tags: woocommerce, android, mobile, shop, sales, assistant, business, control, statistics, reports, tracker
 Requires at least: 3.0.1
 Tested up to: 4.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -58,30 +58,36 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 
 == Screenshots ==
 
-1. About WooCommerce Mobile Assistant screenshot-1.png
-2. Mobile Assistant Dashboard screenshot-2.png
-3. Mobile Assistant Connection Settings screenshot-3.png
-4. Mobile Assistant Customers General screenshot-4.png
-5. Mobile Assistant Menu screenshot-5.png
-6. Mobile Assistant Order Details screenshot-6.png
-7. Mobile Assistant Orders General  screenshot-7.png
-8. Mobile Assistant Orders Status Update screenshot-8.png
-9. Mobile Assistant Product Details screenshot-9.png
-10. Mobile Assistant Products General screenshot-10.png
-11. Mobile Assistant Push Notifications screenshot-11.png
-12. Mobile Assistant Side Menu screenshot-12.png
-13. Mobile Assistant Widget Setting screenshot-13.png
-14. Widget screenshot-14.png
-15. Plugin 	screenshot-15.png
-
- 
+1. About WooCommerce Mobile Assistant 
+2. Mobile Assistant Dashboard 
+3. Mobile Assistant Connection Settings
+4. Mobile Assistant Customers General
+5. Mobile Assistant Menu 
+6. Mobile Assistant Order 
+7. Mobile Assistant Orders General  
+8. Mobile Assistant Orders Status Update 
+9. Mobile Assistant Product Details 
+10. Mobile Assistant Products General 
+11. Mobile Assistant Push Notifications 
+12. Mobile Assistant Side Menu 
+13. Mobile Assistant Widget 
+14. Widget 
+15. Plugin
 
 == Changelog ==
+= 1.0.1 =
+* BugFix
+
+
 
 = 1.0.0 =
 * First release
 
 == Upgrade notice ==
+
+= 1.0.1 =
+* BugFix
+
 
 = 1.0.0 =
 * First release

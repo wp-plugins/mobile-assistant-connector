@@ -76,22 +76,35 @@ class ConnectorSettingsPage
     {
         // Set class property
         $this->options = get_option('mobassistantconnector');
+
 ?>
+
         <div class="wrap">
-            <h2>Mobile Assistant Connector</h2>
-            <form method="post" action="options.php">
-            <?php settings_fields('mobassistantconnector_group'); ?>
-			<div class="section_wrap">
-			<?php do_settings_sections('connector-access'); ?>
+			<div class="sa_content">
+				<h2>Mobile Assistant Connector</h2>
+				<form method="post" action="options.php">
+				<?php settings_fields('mobassistantconnector_group'); ?>
+				<div class="section_wrap">
+				<?php do_settings_sections('connector-access'); ?>
+				</div>
+				<div class="section_wrap qr">
+				<?php do_settings_sections('connector-qr'); ?>
+				</div>
+				<div class="button_toolbar tablenav bottom">
+				<?php submit_button('Save Connector Configuration', 'primary', 'submit-form', false); ?>
+				</div>
+				</form>
 			</div>
-			<div class="section_wrap qr">
-			<?php do_settings_sections('connector-qr'); ?>
-			</div>
-			<div class="button_toolbar tablenav bottom">
-            <?php submit_button('Save Connector Configuration', 'primary', 'submit-form', false); ?>
-			</div>
-            </form>
+			<div class="sa_sidebar">
+				<div class="section">
+				<h3>Get the App from Google Play</h3>
+					<a class="ma_play" href="http://goo.gl/3cq67C" target="_blank" ><img src="https://api.qrserver.com/v1/create-qr-code/?data=http%3A%2F%2Fgoo.gl%2F3cq67C&amp;size=200x200&amp;format=png&amp;margin=0&amp;color=0-0-0&amp;bgcolor=255-255-255" alt="Get the App from Google Play">
+					Click or use your device camera <br />to read the qr-code
+					</a>
+				</div>
+			</div>	
         </div>
+		
         <?php
     }
     

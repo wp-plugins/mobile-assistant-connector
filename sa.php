@@ -432,7 +432,7 @@ class MobileAssistantConnector
         $data_graphs = '';
         $order_status_stats = array();
         $store_stats = array('count_orders' => "0", 'total_sales' => "0", 'count_customers' => "0", 'count_products' => "0", "last_order_id" => "0", "new_orders" => "0");
-        $today = date("Y-m-d", time());
+        $today = date("Y-m-d", time(0));
         $date_from = $date_to = $today;
 
         $data = array();
@@ -754,8 +754,6 @@ class MobileAssistantConnector
     private function _get_total_orders_i_products($data) {
         global $wpdb;
 
-       
-
         $query_orders = "SELECT
               COUNT(posts.ID) AS count_orders,
               SUM(meta_order_total.meta_value) AS total_sales
@@ -777,7 +775,8 @@ class MobileAssistantConnector
         }
 
 
-
+		$query_where_parts[] = " posts.post_type = 'shop_order' ";
+	
         if (isset($data['date_from'])) {
             $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date) >= '%d'", strtotime($data['date_from']));
         }
@@ -793,6 +792,12 @@ class MobileAssistantConnector
                 $query_where_parts[] = sprintf(" status_terms.slug IN ('%s')", $this->get_filter_statuses($data['statuses']));
             }
         }
+        
+	$status_list_hide = array("auto-draft", "draft", "trash" );
+
+	if(!empty($status_list_hide)) {
+	    $query_where_parts[] = " posts.post_status NOT IN ( '" . implode( $status_list_hide, "', '") . "' )";
+	}
 
         if(!empty($query_where_parts)) {
             $query_orders .= " WHERE " . implode(" AND ", $query_where_parts);
