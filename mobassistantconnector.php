@@ -5,7 +5,7 @@ Plugin URI: http://woocommerce-manager.com/plugin/mobassistantconnector.zip
 Description:  This plugin allows you to keep your online business under control wherever you are. All you need is just to have on hand your android mobile phone and Internet connection.
 Author: eMagicOne
 Author URI: http://woocommerce-manager.com
-Version: 1.0.0
+Version: 1.0.1
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 
