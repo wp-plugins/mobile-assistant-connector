@@ -183,7 +183,7 @@ class MobileAssistantConnector
         }
 
         if(!function_exists('json_encode')) {
-            $data = to_json($data);
+            $data = sm_to_json($data);
         } else {
             $data = json_encode($data);
         }
@@ -2145,7 +2145,7 @@ function sendPush2Google($setting_id, $registration_id, $message) {
     );
 
     if(!function_exists('json_encode')) {
-        $post_data = to_json($post_data);
+        $post_data = sm_to_json($post_data);
     } else {
         $post_data = json_encode($post_data);
     }
@@ -2372,7 +2372,7 @@ function nice_price($n, $currency, $is_count = false) {
 }
 
 
-function to_json($data) {
+function sm_to_json($data) {
     $isArray = true;
     $keys = array_keys($data);
     $prevKey = -1;
@@ -2393,7 +2393,7 @@ function to_json($data) {
         $item = (!$isArray ? "\"$key\":" : '');
 
         if (is_array($value)) {
-            $item .= to_json($value);
+            $item .= sm_to_json($value);
         } elseif (is_null($value)) {
             $item .= 'null';
         } elseif (is_bool($value)) {

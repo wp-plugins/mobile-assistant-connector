@@ -42,10 +42,6 @@ class ConnectorSettingsPage
         //http://davidshimjs.github.io/qrcodejs/ 
         echo '
             <script type="text/javascript">
-                jQuery("#muselect").tokenize();
-            </script>
-
-            <script type="text/javascript">
                 var QRCode = new QRCode("mobassist_qr_code", {
                     text: "' . $qr_config . '",
                     width: 250,
