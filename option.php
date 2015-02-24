@@ -75,7 +75,7 @@ class ConnectorSettingsPage
 
 ?>
 
-        <div class="wrap">
+        <div class="sa_wrap">
 			<div class="sa_content">
 				<h2>Mobile Assistant Connector</h2>
 				<form method="post" action="options.php">

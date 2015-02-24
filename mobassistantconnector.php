@@ -5,7 +5,7 @@ Plugin URI: http://woocommerce-manager.com
 Description:  This plugin allows you to keep your online business under control wherever you are. All you need is just to have on hand your android mobile phone and Internet connection.
 Author: eMagicOne
 Author URI: http://woocommerce-manager.com
-Version: 1.0.3
+Version: 1.0.4
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 
@@ -108,9 +108,10 @@ if (in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', ge
 			public function __construct()
             {
 				
-				
+			if ( isset($_GET['page']) && $_GET['page'] == 'connector') {	
 				add_action('admin_enqueue_scripts', array( &$this,'ema_option_styles'));
 				add_action('admin_enqueue_scripts', array( &$this,'ema_option_scripts'));
+			}
 				add_filter('query_vars', array( &$this,'add_query_vars'));
 				add_action('template_redirect', array( &$this,'the_template'));
 				
@@ -201,10 +202,7 @@ if (in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', ge
 		
 			public function ema_option_styles() {
 				wp_register_style('ema_style', plugins_url('css/style.css', __FILE__));
-				wp_enqueue_style('ema_style');
-    
-				wp_register_style('tb_style', plugins_url('css/tb.css', __FILE__));
-				wp_enqueue_style('tb_style');			
+				wp_enqueue_style('ema_style');	
 			}
 
 			public function ema_option_scripts() {
