@@ -76,6 +76,11 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 
 == Changelog ==
 
+= 1.0.5 =
+* Image thumbnails now are displayed in product list
+* Fixed bug with incorrect date
+* Bug with incorrect date was fixed 
+
 = 1.0.4 =
 * Fix css
 * Fix Script loading
@@ -94,6 +99,11 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 * First release
 
 == Upgrade notice ==
+
+= 1.0.5 =
+* Image thumbnails now are displayed in product list
+* Fixed bug with incorrect date
+* Bug with incorrect date was fixed 
 
 = 1.0.4 =
 * Fix css

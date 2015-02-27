@@ -5,7 +5,7 @@ Plugin URI: http://woocommerce-manager.com
 Description:  This plugin allows you to keep your online business under control wherever you are. All you need is just to have on hand your android mobile phone and Internet connection.
 Author: eMagicOne
 Author URI: http://woocommerce-manager.com
-Version: 1.0.4
+Version: 1.0.5
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
 

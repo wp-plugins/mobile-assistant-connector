@@ -6,8 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class MobileAssistantConnector
 {
-    const PLUGIN_CODE = '2';
-    const PLUGIN_VERSION = '1.0.2';
+    const PLUGIN_CODE = '5';
+    const PLUGIN_VERSION = '1.0.5';
 
     public $call_function;
     public $hash;
@@ -528,7 +528,7 @@ class MobileAssistantConnector
             }
 
             if($custom_period == 7) {
-                $sql = "SELECT MIN(post_date_gmt) AS min_date_add, MAX(post_date_gmt) AS max_date_add FROM `{$wpdb->posts}` WHERE post_type = 'shop_order'";
+                $sql = "SELECT MIN(post_date) AS min_date_add, MAX(post_date) AS max_date_add FROM `{$wpdb->posts}` WHERE post_type = 'shop_order'";
                 if(!empty($this->status_list_hide)) {
                     $sql .= " AND post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
                 }
@@ -562,7 +562,8 @@ class MobileAssistantConnector
 
             $query .= " LEFT JOIN `{$wpdb->postmeta}` AS meta_order_total ON meta_order_total.post_id = posts.ID AND meta_order_total.meta_key = '_order_total'
                         WHERE posts.post_type = 'shop_order'
-                            AND UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d' AND UNIX_TIMESTAMP(posts.post_date_gmt) < '%d' ";
+                            AND UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) >= '%d'
+                            AND UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) < '%d' ";
             if(!empty($this->status_list_hide)) {
                 $query .= " AND posts.post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";
             }
@@ -577,7 +578,7 @@ class MobileAssistantConnector
                 }
             }
 
-            $query .= " GROUP BY DATE(posts.post_date_gmt) ORDER BY posts.post_date_gmt";
+            $query .= " GROUP BY DATE(posts.post_date) ORDER BY posts.post_date";
 
             $total_order_per_day = 0;
             if($results = $wpdb->get_results($query, ARRAY_A)) {
@@ -595,8 +596,8 @@ class MobileAssistantConnector
             $query = "SELECT COUNT(DISTINCT(c.ID)) AS tot_customers
                       FROM `{$wpdb->users}` AS c
                         LEFT JOIN `{$wpdb->usermeta}` AS cap ON cap.user_id = c.ID
-				      WHERE cap.meta_key = 'wp_capabilities'
-                        AND cap.meta_value LIKE '%%%s%%'
+				      WHERE (cap.meta_key = '{$wpdb->prefix}capabilities'
+                        AND cap.meta_value LIKE '%%%s%%')
                         AND UNIX_TIMESTAMP(c.user_registered) >= '%d'
                         AND UNIX_TIMESTAMP(c.user_registered) < '%d'";
             $query = sprintf($query, 'customer', $date, strtotime($plus_date, $date));
@@ -694,11 +695,11 @@ class MobileAssistantConnector
 
         $query_where_parts[] = " posts.post_type = 'shop_order' ";
         if(!empty($date_from)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d'", strtotime($date_from . " 00:00:00"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) >= '%d'", strtotime($date_from . " 00:00:00"));
         }
 
         if(!empty($date_to)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) <= '%d'", strtotime($date_to . " 23:59:59"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) <= '%d'", strtotime($date_to . " 23:59:59"));
         }
 
         if(!empty($this->status_list_hide)) {
@@ -740,7 +741,7 @@ class MobileAssistantConnector
                   FROM `{$wpdb->users}` AS c
                       LEFT JOIN `{$wpdb->usermeta}` AS usermeta ON usermeta.user_id = c.ID";
 
-        $query_where_parts[] = " usermeta.meta_key = 'wp_capabilities' AND usermeta.meta_value LIKE '%customer%' ";
+        $query_where_parts[] = " (usermeta.meta_key = '{$wpdb->prefix}capabilities' AND usermeta.meta_value LIKE '%customer%') ";
 
         if(!empty($data['date_from'])) {
             $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(c.user_registered) >= '%d'", strtotime($data['date_from']));
@@ -789,11 +790,11 @@ class MobileAssistantConnector
 		$query_where_parts[] = " posts.post_type = 'shop_order' ";
 	
         if (isset($data['date_from'])) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d'", strtotime($data['date_from']));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) >= '%d'", strtotime($data['date_from']));
         }
 
         if (isset($data['date_to'])) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) <= '%d'", strtotime($data['date_to']));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) <= '%d'", strtotime($data['date_to']));
         }
 
         if (isset($data['statuses'])) {
@@ -829,7 +830,6 @@ class MobileAssistantConnector
     public function get_orders() {
         global $wpdb;
 
-
         $sql_total_products = "SELECT SUM(meta_items_qty.meta_value)
             FROM `{$wpdb->prefix}woocommerce_order_items` AS order_items
             LEFT JOIN `{$wpdb->prefix}woocommerce_order_itemmeta` AS meta_items_qty ON meta_items_qty.order_item_id = order_items.order_item_id AND meta_items_qty.meta_key = '_qty'
@@ -843,7 +843,7 @@ class MobileAssistantConnector
 
         $fields = "SELECT
                     posts.ID AS id_order,
-                    posts.post_date_gmt AS date_add,
+                    posts.post_date AS date_add,
                     meta_order_total.meta_value AS total_paid,
                     meta_order_currency.meta_value AS currency_code,
                     $status_code_field AS status_code,
@@ -882,11 +882,11 @@ class MobileAssistantConnector
         }
 
         if(!empty($this->orders_from)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) >= '%d'", strtotime($this->orders_from." 00:00:00"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) >= '%d'", strtotime($this->orders_from." 00:00:00"));
         }
 
         if(!empty($this->orders_to)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts.post_date_gmt) <= '%d'", strtotime($this->orders_to." 23:59:59"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) <= '%d'", strtotime($this->orders_to." 23:59:59"));
         }
 
         if(!empty($this->search_order_id) && preg_match('/^\d+(?:,\d+)*$/', $this->search_order_id)) {
@@ -920,7 +920,7 @@ class MobileAssistantConnector
                 $query .= "posts.ID DESC";
                 break;
             case 'date':
-                $query .= "posts.post_date_gmt DESC";
+                $query .= "posts.post_date DESC";
                 break;
             case 'name':
                 $query .= "customer ASC";
@@ -1006,13 +1006,19 @@ class MobileAssistantConnector
         $order_total = nice_price($order->get_total(), $currency_code);
         $countries = $woocommerce->countries->countries;
 
+        if(function_exists('wc_get_order_status_name')) {
+            $order_status_code = $order->post_status;
+        } else {
+            $order_status_code = $order->status;
+        }
+
         $order_info = array(
             'id_order'          => $order->id,
             'id_customer'       => $order->user_id,
             'email'             => isset($user->data->user_email) ? $user->data->user_email : $order->billing_email,
             'customer'          => $customer_name,
             'date_added'        => $order->order_date,
-            'status_code'       => $order->status,
+            'status_code'       => $order_status_code,
             'status'            => _get_order_status_name($order->id, $order->status),
             'total'             => $order_total,
             'currency_code'     => $currency_code,
@@ -1058,6 +1064,10 @@ class MobileAssistantConnector
         foreach($products as $product) {
             $product['product_price'] = nice_price($product['product_price'], $currency_code);
             $product['product_type'] = $this->_get_product_type($product['product_id']);
+
+            $attachment_id = get_post_thumbnail_id( $product['product_id'] );
+            $id_image = wp_get_attachment_image_src( $attachment_id, 'thumbnail' );
+            $product['thumbnail'] = $id_image[0];
 
             if (strtolower($product['product_type']) == 'variable' && $product['variation_id'] > 0) {
                 $var = new WC_Product_Variation( $product['variation_id'] );
@@ -1174,7 +1184,7 @@ class MobileAssistantConnector
         $query = $fields . $sql;
         $query_page = $total_fields . $sql;
 
-        $query_where_parts[] = " cap.meta_key = '{$wpdb->prefix}capabilities' AND cap.meta_value LIKE '%customer%' ";
+        $query_where_parts[] = " (cap.meta_key = '{$wpdb->prefix}capabilities' AND cap.meta_value LIKE '%customer%') ";
         if(!empty($this->customers_from)) {
             $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(c.user_registered) >= '%d'", strtotime($this->customers_from." 00:00:00"));
         }
@@ -1347,7 +1357,7 @@ class MobileAssistantConnector
                     meta_total.meta_value AS total_paid,
                     meta_curr.meta_value AS currency_code,
                     posts.post_status AS order_status_id,
-                    posts.post_date_gmt as date_add,
+                    posts.post_date as date_add,
                     (SELECT SUM(meta_value) FROM `{$wpdb->prefix}woocommerce_order_itemmeta` WHERE order_item_id = order_items.order_item_id AND meta_key = '_qty') AS pr_qty
                 FROM `$wpdb->posts` AS posts
                     LEFT JOIN `{$wpdb->postmeta}` AS meta ON posts.ID = meta.post_id
@@ -1521,11 +1531,11 @@ class MobileAssistantConnector
         }
 
         if (!empty($this->products_from)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts_orders.post_date_gmt) >= '%d'", strtotime($this->products_from . " 00:00:00"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) >= '%d'", strtotime($this->products_from . " 00:00:00"));
         }
 
         if (!empty($this->products_to)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(posts_orders.post_date_gmt) <= '%d'", strtotime($this->products_to . " 23:59:59"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) <= '%d'", strtotime($this->products_to . " 23:59:59"));
         }
 
         if (!empty($query_params_parts)) {
@@ -1566,6 +1576,10 @@ class MobileAssistantConnector
             $product['price'] = nice_price($product['price'], $this->currency);
             $product['quantity'] = intval($product['quantity']);
             $product['product_type'] = $this->_get_product_type($product['product_id']);
+
+            $attachment_id = get_post_thumbnail_id( $product['product_id'] );
+            $id_image = wp_get_attachment_image_src( $attachment_id, 'thumbnail' );
+            $product['thumbnail'] = $id_image[0];
 
             $products[] = $product;
         }
@@ -2357,12 +2371,12 @@ function nice_price($n, $currency, $is_count = false) {
         $decimal_sep = wp_specialchars_decode(stripslashes(get_option('woocommerce_price_decimal_sep')), ENT_QUOTES);
         $thousands_sep = wp_specialchars_decode(stripslashes(get_option('woocommerce_price_thousand_sep')), ENT_QUOTES);
 
-        $final_number = apply_filters('raw_woocommerce_price', floatval($final_number));
-        $final_number = apply_filters('formatted_woocommerce_price', number_format($final_number, $num_decimals, $decimal_sep, $thousands_sep), $final_number, $num_decimals, $decimal_sep, $thousands_sep);
-
-        if (apply_filters('woocommerce_price_trim_zeros', false) && $num_decimals > 0) {
-            $final_number = wc_trim_zeros($final_number);
-        }
+//        $final_number = apply_filters('raw_woocommerce_price', floatval($final_number));
+//        $final_number = apply_filters('formatted_woocommerce_price', number_format($final_number, $num_decimals, $decimal_sep, $thousands_sep), $final_number, $num_decimals, $decimal_sep, $thousands_sep);
+        $final_number = number_format($final_number, $num_decimals, $decimal_sep, $thousands_sep);
+//        if (apply_filters('woocommerce_price_trim_zeros', false) && $num_decimals > 0) {
+//            $final_number = wc_trim_zeros($final_number);
+//        }
 
         $final_number = $final_number . $suf . ' ';
         $final_number = ($negative ? '-' : '') . sprintf(get_woocommerce_price_format(), $currency_symbol, $final_number);
