@@ -6,8 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class MobileAssistantConnector
 {
-    const PLUGIN_CODE = '5';
-    const PLUGIN_VERSION = '1.0.5';
+    const PLUGIN_CODE = '6';
+    const PLUGIN_VERSION = '1.0.6';
 
     public $call_function;
     public $hash;
@@ -1531,11 +1531,11 @@ class MobileAssistantConnector
         }
 
         if (!empty($this->products_from)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) >= '%d'", strtotime($this->products_from . " 00:00:00"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts_orders.post_date, '+00:00', @@global.time_zone)) >= '%d'", strtotime($this->products_from . " 00:00:00"));
         }
 
         if (!empty($this->products_to)) {
-            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts.post_date, '+00:00', @@global.time_zone)) <= '%d'", strtotime($this->products_to . " 23:59:59"));
+            $query_where_parts[] = sprintf(" UNIX_TIMESTAMP(CONVERT_TZ(posts_orders.post_date, '+00:00', @@global.time_zone)) <= '%d'", strtotime($this->products_to . " 23:59:59"));
         }
 
         if (!empty($query_params_parts)) {
