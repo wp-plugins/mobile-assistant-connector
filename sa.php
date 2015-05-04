@@ -6,8 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class MobileAssistantConnector
 {
-    const PLUGIN_CODE = '6';
-    const PLUGIN_VERSION = '1.0.6';
+    const PLUGIN_CODE = '7';
+    const PLUGIN_VERSION = '1.0.7';
 
     public $call_function;
     public $hash;
@@ -386,6 +386,31 @@ class MobileAssistantConnector
                 $custom_period['start_date'] = date($format, mktime(0, 0, 0, date(1), date(1), date("Y")-1));
                 $custom_period['end_date'] = date($format, mktime(23, 59, 59, date(1), date(1)-1, date("Y")));
                 break;
+
+            case 8: //Last quarter
+                $m = date("n");
+                $start_m = 1;
+                $end_m = 3;
+                $year_offset = 0;
+
+                if ($m <= 3) {
+                    $start_m = 10;
+                    $end_m = 12;
+                    $year_offset = -1;
+                } else if ($m >= 4 && $m <= 6) {
+                    $start_m = 1;
+                    $end_m = 3;
+                } else if ($m >= 7 && $m <= 9) {
+                    $start_m = 4;
+                    $end_m = 6;
+                } else if ($m >= 10) {
+                    $start_m = 7;
+                    $end_m = 9;
+                }
+
+                $custom_period['start_date'] = date($format, mktime(0, 0, 0, $start_m, 1, date("Y")));
+                $custom_period['end_date'] = date($format, mktime(23, 59, 59, $end_m + 1, date(1) + $year_offset, date("Y")));
+                break;
         }
 
         return $custom_period;
@@ -505,29 +530,27 @@ class MobileAssistantConnector
         }
         $endDate = $this->graph_to . " 23:59:59";
 
-
-        if(!empty($this->custom_period) && strlen($this->custom_period) > 0) {
-            $custom_period = $this->get_custom_period($this->custom_period);
-
-            $startDate = $custom_period['start_date'];
-            $endDate = $custom_period['end_date'];
-        }
-
+//        if(!empty($this->custom_period) && strlen($this->custom_period) > 0) {
+//            $custom_period = $this->get_custom_period($this->custom_period);
+//
+//            $startDate = $custom_period['start_date'];
+//            $endDate = $custom_period['end_date'];
+//        }
 
         $plus_date = "+1 day";
-        $custom_period = $this->custom_period;
-        if(isset($custom_period) && strlen($custom_period) > 0) {
-            $custom_period_date = $this->get_custom_period($custom_period);
+//        $custom_period = $this->custom_period;
+        if(!empty($this->custom_period) && strlen($this->custom_period) > 0) {
+            $custom_period_date = $this->get_custom_period($this->custom_period);
 
-            if($custom_period == 3) {
+            if($this->custom_period == 3) {
                 $plus_date = "+3 day";
-            } else if($custom_period == 4) {
+            } else if($this->custom_period == 4 || $this->custom_period == 8) {
                 $plus_date = "+1 week";
-            } else if($custom_period == 5 || $custom_period == 6 || $custom_period == 7) {
+            } else if($this->custom_period == 5 || $this->custom_period == 6 || $this->custom_period == 7) {
                 $plus_date = "+1 month";
             }
 
-            if($custom_period == 7) {
+            if($this->custom_period == 7) {
                 $sql = "SELECT MIN(post_date) AS min_date_add, MAX(post_date) AS max_date_add FROM `{$wpdb->posts}` WHERE post_type = 'shop_order'";
                 if(!empty($this->status_list_hide)) {
                     $sql .= " AND post_status NOT IN ( '" . implode( $this->status_list_hide, "', '") . "' )";

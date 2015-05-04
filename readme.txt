@@ -2,8 +2,8 @@
 Contributors: emagicone
 Tags: woocommerce, android, mobile, shop, sales, assistant, business, control, statistics, reports, tracker
 Requires at least: 3.0.1
-Tested up to: 4.1
-Stable tag: 1.0.6
+Tested up to: 4.2
+Stable tag: 1.0.7
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -75,6 +75,12 @@ You can request any feature at our [Google Plus public group](https://plus.googl
 15. Plugin
 
 == Changelog ==
+
+= 1.0.7 =
+* Added yesterday and last quarter period on Dashboard
+
+= 1.0.6 =
+* Fixed bug
 
 = 1.0.5 =
 * Image thumbnails now are displayed in product list
